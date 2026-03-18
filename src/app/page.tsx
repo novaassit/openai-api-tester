@@ -76,7 +76,7 @@ export default function Home() {
       ...(maxTokens ? { max_tokens: maxTokens } : {}),
     };
     const rawReq = [
-      `POST ${targetBaseURL}/chat/completions HTTP/1.1`,
+      `POST ${targetBaseURL.replace(/\/v1\/?$/, "")}/v1/chat/completions HTTP/1.1`,
       `Host: ${(() => { try { return new URL(targetBaseURL).host; } catch { return targetBaseURL; } })()}`,
       `Content-Type: application/json`,
       `Authorization: Bearer ${apiKey.slice(0, 7)}...${apiKey.slice(-4)}`,
