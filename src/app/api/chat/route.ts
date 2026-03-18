@@ -9,9 +9,15 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "API key is required" }, { status: 400 });
   }
 
+  const normalizedBaseURL = baseURL
+    ? baseURL.replace(/\/+$/, "").endsWith("/v1")
+      ? baseURL
+      : `${baseURL.replace(/\/+$/, "")}/v1`
+    : undefined;
+
   const openai = new OpenAI({
     apiKey,
-    ...(baseURL ? { baseURL } : {}),
+    ...(normalizedBaseURL ? { baseURL: normalizedBaseURL } : {}),
   });
 
   if (stream) {
