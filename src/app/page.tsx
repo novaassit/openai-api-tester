@@ -39,7 +39,9 @@ export default function Home() {
   const [usage, setUsage] = useState<UsageInfo | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
   const [rawResponse, setRawResponse] = useState<string>("");
+  const [rawRequest, setRawRequest] = useState<string>("");
   const [showRaw, setShowRaw] = useState(false);
+  const [showRequest, setShowRequest] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -63,6 +65,25 @@ export default function Home() {
     setUsage(null);
     setLatency(null);
     setRawResponse("");
+
+    // Build raw HTTP request preview
+    const targetBaseURL = baseURL || "https://api.openai.com/v1";
+    const requestBody = {
+      model: activeModel,
+      messages: allMessages,
+      stream: useStream,
+      temperature,
+      ...(maxTokens ? { max_tokens: maxTokens } : {}),
+    };
+    const rawReq = [
+      `POST ${targetBaseURL}/chat/completions HTTP/1.1`,
+      `Host: ${(() => { try { return new URL(targetBaseURL).host; } catch { return targetBaseURL; } })()}`,
+      `Content-Type: application/json`,
+      `Authorization: Bearer ${apiKey.slice(0, 7)}...${apiKey.slice(-4)}`,
+      ``,
+      JSON.stringify(requestBody, null, 2),
+    ].join("\n");
+    setRawRequest(rawReq);
 
     const startTime = Date.now();
     const controller = new AbortController();
@@ -183,6 +204,7 @@ export default function Home() {
     setUsage(null);
     setLatency(null);
     setRawResponse("");
+    setRawRequest("");
   };
 
   return (
@@ -330,8 +352,8 @@ export default function Home() {
       </div>
 
       {/* Info bar */}
-      {(latency !== null || usage) && (
-        <div className="flex gap-4 text-xs text-gray-400">
+      {(latency !== null || usage || rawRequest) && (
+        <div className="flex gap-4 text-xs text-gray-400 flex-wrap">
           {latency !== null && <span>Latency: {latency}ms</span>}
           {usage && (
             <span>
@@ -339,13 +361,29 @@ export default function Home() {
               {usage.total_tokens}
             </span>
           )}
-          <button
-            onClick={() => setShowRaw(!showRaw)}
-            className="text-blue-400 hover:underline ml-auto"
-          >
-            {showRaw ? "Hide" : "Show"} Raw Response
-          </button>
+          <div className="flex gap-3 ml-auto">
+            {rawRequest && (
+              <button
+                onClick={() => setShowRequest(!showRequest)}
+                className="text-yellow-400 hover:underline"
+              >
+                {showRequest ? "Hide" : "Show"} Request
+              </button>
+            )}
+            <button
+              onClick={() => setShowRaw(!showRaw)}
+              className="text-blue-400 hover:underline"
+            >
+              {showRaw ? "Hide" : "Show"} Response
+            </button>
+          </div>
         </div>
+      )}
+
+      {showRequest && rawRequest && (
+        <pre className="bg-gray-900 rounded-lg p-4 text-xs text-yellow-400 overflow-x-auto max-h-[300px] overflow-y-auto">
+          {rawRequest}
+        </pre>
       )}
 
       {showRaw && rawResponse && (
