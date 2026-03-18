@@ -26,6 +26,7 @@ const MODELS = [
 
 export default function Home() {
   const [apiKey, setApiKey] = useState("");
+  const [baseURL, setBaseURL] = useState("");
   const [model, setModel] = useState("gpt-4o");
   const [customModel, setCustomModel] = useState("");
   const [useStream, setUseStream] = useState(true);
@@ -73,6 +74,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           apiKey,
+          baseURL: baseURL || undefined,
           model: activeModel,
           messages: allMessages,
           stream: useStream,
@@ -162,6 +164,7 @@ export default function Home() {
   }, [
     userInput,
     apiKey,
+    baseURL,
     isLoading,
     systemPrompt,
     messages,
@@ -208,6 +211,18 @@ export default function Home() {
           >
             {showApiKey ? "Hide" : "Show"}
           </button>
+        </div>
+
+        {/* Base URL */}
+        <div className="flex gap-2 items-center">
+          <label className="text-sm w-28 shrink-0">Base URL</label>
+          <input
+            type="text"
+            value={baseURL}
+            onChange={(e) => setBaseURL(e.target.value)}
+            placeholder="https://api.openai.com/v1 (default)"
+            className="flex-1 bg-gray-800 rounded px-3 py-2 text-sm font-mono outline-none focus:ring-1 focus:ring-blue-500"
+          />
         </div>
 
         {/* Model */}
