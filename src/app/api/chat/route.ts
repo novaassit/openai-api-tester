@@ -2,14 +2,17 @@ import { NextRequest } from "next/server";
 import OpenAI from "openai";
 
 export async function POST(req: NextRequest) {
-  const { apiKey, model, messages, stream, temperature, maxTokens } =
+  const { apiKey, baseURL, model, messages, stream, temperature, maxTokens } =
     await req.json();
 
   if (!apiKey) {
     return Response.json({ error: "API key is required" }, { status: 400 });
   }
 
-  const openai = new OpenAI({ apiKey });
+  const openai = new OpenAI({
+    apiKey,
+    ...(baseURL ? { baseURL } : {}),
+  });
 
   if (stream) {
     const response = await openai.chat.completions.create({
